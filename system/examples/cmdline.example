@@ -1,0 +1,1 @@
+initrd=\initramfs-linux.img cryptdevice=PARTUUID=<luks-partuuid>:root root=/dev/mapper/root zswap.enabled=0 rootflags=subvol=@ rw rootfstype=btrfs splash quiet

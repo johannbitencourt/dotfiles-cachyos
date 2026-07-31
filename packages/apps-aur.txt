@@ -1,0 +1,5 @@
+google-chrome
+hyprdynamicmonitors
+obsidian
+spotify
+zen-browser-bin

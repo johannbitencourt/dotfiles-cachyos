@@ -1,0 +1,10 @@
+# Example only. Generate real UUIDs during installation.
+# LUKS2 -> Btrfs root with subvolumes and zstd compression.
+
+UUID=<btrfs-root-uuid> / btrfs rw,relatime,compress=zstd:3,ssd,space_cache=v2,subvol=/@ 0 0
+UUID=<btrfs-root-uuid> /home btrfs rw,relatime,compress=zstd:3,ssd,space_cache=v2,subvol=/@home 0 0
+UUID=<btrfs-root-uuid> /var/cache/pacman/pkg btrfs rw,relatime,compress=zstd:3,ssd,space_cache=v2,subvol=/@pkg 0 0
+UUID=<btrfs-root-uuid> /var/log btrfs rw,relatime,compress=zstd:3,ssd,space_cache=v2,subvol=/@log 0 0
+UUID=<efi-uuid> /boot vfat rw,relatime,fmask=0022,dmask=0022,utf8,errors=remount-ro 0 2
+/swap/swapfile none swap defaults,pri=10 0 0
+UUID=<data-disk-uuid> /data ext4 rw,noatime,discard,exec 0 2

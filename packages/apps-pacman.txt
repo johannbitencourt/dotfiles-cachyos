@@ -1,0 +1,5 @@
+hyprpicker
+hyprsunset
+kitty
+satty
+swayosd

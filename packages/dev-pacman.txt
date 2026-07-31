@@ -1,0 +1,14 @@
+bat
+docker
+docker-compose
+dust
+dysk
+github-cli
+iotop
+lazygit
+lazydocker
+ncdu
+ninja
+rsync
+yazi
+yq

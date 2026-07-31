@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+required_command="${1:-}"
+
+if [[ -z $required_command || $# -lt 2 ]]; then
+  printf 'usage: %s <required-command> <command> [args...]\n' "$0" >&2
+  exit 2
+fi
+
+shift
+
+if ! command -v "$required_command" >/dev/null 2>&1; then
+  notify-send "Optional app unavailable" "Install $required_command from the optional package layers."
+  exit 1
+fi
+
+exec "$@"

@@ -1,0 +1,2 @@
+herdr-bin
+visual-studio-code-bin

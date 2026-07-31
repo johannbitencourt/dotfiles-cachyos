@@ -1,0 +1,5 @@
+# Changes require a Hyprland session restart to take effect.
+
+export TERMINAL=ghostty
+export EDITOR=nvim
+export VISUAL=nvim

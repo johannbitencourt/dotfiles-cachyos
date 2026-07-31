@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if command -v hyprpolkitagent >/dev/null 2>&1; then
+  exec hyprpolkitagent
+fi
+
+if systemctl --user list-unit-files hyprpolkitagent.service >/dev/null 2>&1; then
+  exec systemctl --user start hyprpolkitagent.service
+fi
+
+if command -v /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 >/dev/null 2>&1; then
+  exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+fi
+
+notify-send "Polkit agent unavailable" "Install hyprpolkitagent or another polkit authentication agent."
