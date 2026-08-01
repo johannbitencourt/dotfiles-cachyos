@@ -1,5 +1,6 @@
-hyprpicker
-hyprsunset
+blueman
+btop
+fastfetch
 kitty
+network-manager-applet
 satty
-swayosd

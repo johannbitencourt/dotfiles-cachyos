@@ -5,8 +5,8 @@ dust
 dysk
 github-cli
 iotop
-lazygit
 lazydocker
+lazygit
 ncdu
 ninja
 rsync

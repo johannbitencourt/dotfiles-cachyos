@@ -9,4 +9,9 @@ system/**
 .config/systemd/user/graphical-session.target.wants/**
 .config/systemd/user/timers.target.wants/**
 .config/btop/themes/current.theme
+.config/nvim/LICENSE
+.config/nvim/README.md
+.config/DankMaterialShell/**
+.local/state/DankMaterialShell/**
+.cache/DankMaterialShell/**
 **/*.bak.*

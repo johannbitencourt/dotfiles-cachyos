@@ -3,26 +3,22 @@ set -euo pipefail
 
 required_commands=(
   bash
+  brave
   paru
   starship
   fzf
+  fc-match
   zoxide
   mise
   hyprland
   uwsm
-  waybar
-  walker
-  mako
-  hyprlock
-  hypridle
+  dms
   ghostty
-  grim
-  slurp
   wl-copy
-  pamixer
-  playerctl
+  wtype
+  cliphist
   notify-send
-  xdg-terminal-exec
+  jq
 )
 
 missing=()
@@ -39,18 +35,10 @@ if (( ${#missing[@]} > 0 )); then
   exit 1
 fi
 
-if command -v jq >/dev/null 2>&1; then
-  jq empty "$HOME/.config/waybar/config.jsonc"
-fi
-
 require_font_match() {
   local query="$1"
   local expected="$2"
   local match
-
-  if ! command -v fc-match >/dev/null 2>&1; then
-    return
-  fi
 
   match="$(fc-match -f '%{family}\n' "$query")"
   if [[ $match != *"$expected"* ]]; then
@@ -75,7 +63,6 @@ required_files=(
   "$HOME/.config/hypr/windows.conf"
   "$HOME/.config/uwsm/default"
   "$HOME/.config/uwsm/env"
-  "$HOME/.config/xdg-terminals.list"
   "$HOME/.config/fontconfig/fonts.conf"
 )
 
@@ -98,14 +85,8 @@ if grep -R 'omarchy\|OMARCHY_PATH' "$HOME/.config/uwsm" >/dev/null 2>&1; then
 fi
 
 scripts=(
-  "$HOME/.config/hypr/scripts/lock"
-  "$HOME/.config/hypr/scripts/screenshot"
-  "$HOME/.config/hypr/scripts/toggle-waybar"
-  "$HOME/.config/hypr/scripts/toggle-nightlight"
   "$HOME/.config/hypr/scripts/require-command"
-  "$HOME/.config/hypr/scripts/color-picker"
-  "$HOME/.config/hypr/scripts/start-polkit"
-  "$HOME/.config/waybar/scripts/updates"
+  "$HOME/.config/hypr/scripts/battery-monitor"
 )
 
 for script in "${scripts[@]}"; do
@@ -115,11 +96,16 @@ for script in "${scripts[@]}"; do
   fi
 done
 
-if ! command -v hyprpolkitagent >/dev/null 2>&1 && \
-   ! systemctl --user list-unit-files hyprpolkitagent.service >/dev/null 2>&1 && \
-   ! [[ -x /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 ]]; then
-  printf 'No supported polkit authentication agent found.\n' >&2
+if ! systemctl is-active --quiet NetworkManager; then
+  printf 'Required system service is not active: NetworkManager\n' >&2
   exit 1
 fi
+
+for unit in pipewire.service pipewire-pulse.service wireplumber.service; do
+  if ! systemctl --user is-active --quiet "$unit"; then
+    printf 'Required user service is not active: %s\n' "$unit" >&2
+    exit 1
+  fi
+done
 
 printf 'Post-apply checks passed.\n'

@@ -4,19 +4,21 @@ These notes describe the preferred CachyOS minimal + Hyprland system shape. They
 
 ## Desktop Layer
 
-Install CachyOS minimal with no desktop environment. The desktop is assembled from explicit packages and user-level dotfiles.
+Install CachyOS minimal with no desktop environment. The desktop is assembled from explicit packages and user-level dotfiles. The desktop shell is DMS (DankMaterialShell, `dms-shell-hyprland`) -- it provides the panel, launcher, notifications, control center, idle/lock, and polkit authentication, controlled from Hyprland via `dms ipc call ...`.
 
-Use the bootstrap to install the mandatory layer first:
+Use the canonical bootstrap to install the mandatory layer:
 
 ```bash
 ./install/bootstrap.sh
 ```
 
-Manual package install after `paru` is available:
+Install additional package layers through the shared installer:
 
 ```bash
-sudo pacman -S --needed - < packages/pacman.txt
-paru -S --needed - < packages/aur.txt
+./install/packages.sh apps
+./install/packages.sh dev
+./install/packages.sh gaming
+./install/packages.sh system
 ```
 
 Do not install the dev/gaming/apps layers until Hyprland starts cleanly, the bar loads, the launcher opens, and lock/audio/network work.
@@ -25,7 +27,7 @@ Core services to enable after install:
 
 ```bash
 sudo systemctl enable --now NetworkManager
-sudo systemctl enable --now bluetooth
+sudo systemctl enable --now bluetooth # when bluetooth.service is available
 systemctl --user enable --now pipewire pipewire-pulse wireplumber
 ```
 
@@ -37,20 +39,23 @@ uwsm start hyprland.desktop
 
 UWSM defaults are managed in `~/.config/uwsm/`. Keep these files free of Omarchy paths and helper commands.
 
-Avoid installing Omarchy on this system. If an Omarchy behavior is useful, recreate it as a small local script under `~/.config/hypr/scripts` or `~/.config/waybar/scripts`.
+Avoid installing Omarchy on this system. If an Omarchy behavior is useful,
+recreate it as a small local script under `~/.config/hypr/scripts`, or first
+check whether DMS already covers it via `dms ipc call ...`.
 
 ## Package Layers
 
 Mandatory first-boot layer:
 
-- `packages/pacman.txt`
-- `packages/aur.txt`
+- `packages/core-pacman.txt`
+- `packages/core-aur.txt`
 
 Optional layers after the desktop is verified:
 
 - `packages/dev-pacman.txt` and `packages/dev-aur.txt`
 - `packages/gaming-pacman.txt` and `packages/gaming-aur.txt`
 - `packages/apps-pacman.txt` and `packages/apps-aur.txt`
+- `packages/system-pacman.txt` for non-desktop system tooling
 
 ## Shell Layer
 
@@ -139,7 +144,7 @@ Good candidates:
 
 - Bash config
 - terminal config
-- Hyprland/Waybar/Walker/Mako user config
+- Hyprland user config and DMS keybind wiring (not DMS's own generated settings state)
 - Herdr config
 - Neovim config
 - Mise config

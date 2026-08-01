@@ -54,6 +54,7 @@ background-opacity = 0.98
 
 # Terminal settings
 term = xterm-256color
+async-backend = epoll
 
 # Keybindings
 keybind = f11=toggle_fullscreen

@@ -3,45 +3,34 @@ set -euo pipefail
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-ensure_paru() {
-  if command -v paru >/dev/null 2>&1; then
-    return
-  fi
+if (( EUID == 0 )); then
+  printf 'Run this installer as your regular user, not root.\n' >&2
+  exit 1
+fi
 
-  if pacman -Si paru >/dev/null 2>&1; then
-    sudo pacman -S --needed paru
-    return
-  fi
+if [[ ! -r /etc/os-release ]]; then
+  printf 'Cannot identify this operating system: /etc/os-release is missing.\n' >&2
+  exit 1
+fi
 
-  local build_dir="${TMPDIR:-/tmp}/paru-build"
+# shellcheck disable=SC1091
+source /etc/os-release
+if [[ ${ID:-} != cachyos && " ${ID_LIKE:-} " != *" arch "* ]]; then
+  printf 'This installer supports CachyOS and Arch-based systems only (found %s).\n' "${PRETTY_NAME:-unknown}" >&2
+  exit 1
+fi
 
-  rm -rf "$build_dir"
-  git clone https://aur.archlinux.org/paru.git "$build_dir"
-  (cd "$build_dir" && makepkg -si)
-}
+if [[ $(uname -m) != x86_64 ]]; then
+  printf 'CachyOS desktop manifests currently support x86_64 only.\n' >&2
+  exit 1
+fi
 
-install_pacman_layer() {
-  local file="$1"
-
-  if [[ -s $file ]]; then
-    sudo pacman -S --needed - < "$file"
-  fi
-}
-
-install_aur_layer() {
-  local file="$1"
-
-  if [[ ! -s $file ]]; then
-    return
-  fi
-
-  if ! command -v paru >/dev/null 2>&1; then
-    printf 'paru is required for AUR packages. Install paru, then rerun this script.\n' >&2
+for command_name in sudo pacman git; do
+  if ! command -v "$command_name" >/dev/null 2>&1; then
+    printf 'Required command is missing: %s\n' "$command_name" >&2
     exit 1
   fi
-
-  paru -S --needed - < "$file"
-}
+done
 
 backup_stale_hyprland_lua() {
   local lua_config="$HOME/.config/hypr/hyprland.lua"
@@ -51,18 +40,17 @@ backup_stale_hyprland_lua() {
   fi
 }
 
-sudo pacman -S --needed git chezmoi base-devel
-ensure_paru
-
-install_pacman_layer "$repo_dir/packages/pacman.txt"
-install_aur_layer "$repo_dir/packages/aur.txt"
+sudo -v
+"$repo_dir/install/packages.sh" core
 
 chezmoi init --source "$repo_dir"
 chezmoi apply
 backup_stale_hyprland_lua
 
 sudo systemctl enable --now NetworkManager
-sudo systemctl enable --now bluetooth
+if systemctl list-unit-files bluetooth.service >/dev/null 2>&1; then
+  sudo systemctl enable --now bluetooth
+fi
 systemctl --user enable --now pipewire pipewire-pulse wireplumber
 
 "$repo_dir/install/post-apply-check.sh"
@@ -75,10 +63,8 @@ Start Hyprland with:
   uwsm start hyprland.desktop
 
 After the desktop is verified, optional layers are available:
-  sudo pacman -S --needed - < packages/dev-pacman.txt
-  paru -S --needed - < packages/dev-aur.txt
-  sudo pacman -S --needed - < packages/gaming-pacman.txt
-  paru -S --needed - < packages/gaming-aur.txt
-  sudo pacman -S --needed - < packages/apps-pacman.txt
-  paru -S --needed - < packages/apps-aur.txt
+  ./install/packages.sh apps
+  ./install/packages.sh dev
+  ./install/packages.sh gaming
+  ./install/packages.sh system
 EOF

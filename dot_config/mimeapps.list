@@ -34,7 +34,6 @@ application/xhtml+xml=brave-browser.desktop
 application/x-extension-xhtml=brave-browser.desktop
 application/x-extension-xht=brave-browser.desktop
 x-scheme-handler/terminal=ghostty.desktop
-x-scheme-handler/nxm=modorganizer2-nxm-handler.desktop
 text/plain=nvim.desktop
 text/english=nvim.desktop
 text/x-makefile=nvim.desktop
@@ -52,7 +51,6 @@ text/x-c=nvim.desktop
 text/x-c++=nvim.desktop
 application/xml=nvim.desktop
 text/xml=nvim.desktop
-x-scheme-handler/figma=figma-linux.desktop
 inode/directory=org.gnome.Nautilus.desktop
 x-scheme-handler/claude-cli=claude-code-url-handler.desktop
 

@@ -1,29 +1,74 @@
-# Dotfiles for CachyOS Hyprland
+# CachyOS + DMS + Hyprland Dotfiles
 
-Bash-based chezmoi dotfiles for a CachyOS minimal install with a custom Hyprland desktop.
+Portable chezmoi dotfiles for a CachyOS minimal installation with Hyprland via
+UWSM and DankMaterialShell (DMS) as the desktop shell. Omarchy is not required.
 
-## First Setup
+## Fresh Install
+
+From a TTY on CachyOS minimal:
 
 ```bash
-sudo pacman -S --needed chezmoi git
+sudo pacman -S --needed git
+git clone https://github.com/johannbitencourt/dotfiles-cachyos.git ~/dotfiles-cachyos
+cd ~/dotfiles-cachyos
+./install/bootstrap.sh
+uwsm start hyprland.desktop
+```
+
+The bootstrap validates the OS, fully syncs the system while installing the core
+package layer, asks before building any AUR package, applies chezmoi, enables
+required services, and runs post-apply checks. It is safe to rerun.
+
+For an existing provisioned system, apply only the managed files:
+
+```bash
 chezmoi init --source ~/dotfiles-cachyos
+chezmoi diff
 chezmoi apply
 ```
 
-Recommended bootstrap on a fresh CachyOS minimal install:
+## Package Layers
+
+Core is installed by bootstrap. Add optional layers only as needed:
 
 ```bash
-cd ~/dotfiles-cachyos
-./install/bootstrap.sh
+./install/packages.sh apps
+./install/packages.sh dev
+./install/packages.sh gaming
+./install/packages.sh system
 ```
 
-For a remote repo later:
+| Layer | Purpose |
+| --- | --- |
+| `core` | Hyprland, UWSM, DMS, audio, network, shell, terminal, and daily desktop tools |
+| `apps` | Extra GUI applications and fallback tray applets |
+| `dev` | Containers, Git tooling, terminal utilities, and editors |
+| `gaming` | Steam, Wine, Gamescope, MangoHud, and launchers |
+| `system` | Storage, encryption, hardware diagnostics, and zram tooling |
 
-```bash
-chezmoi init --apply git@github.com:johannbitencourt/dotfiles-cachyos.git
+Package manifests declare package names for a rolling CachyOS system; they are
+not a version-locked system image. AUR recipes are third-party code, so package
+names are shown and confirmation is required before installation. Review the
+PKGBUILD when `paru` offers it. Set `DOTFILES_ALLOW_AUR=1` only for a
+deliberately non-interactive install.
+
+## Hardware Portability
+
+The managed monitor default is safe on laptops, desktops, docks, and VMs:
+
+```text
+monitor = , preferred, auto, 1
 ```
 
-## Daily Usage
+Chezmoi creates `~/.config/hypr/monitors.local.conf` once and never overwrites
+it. Put machine-specific output names, positions, refresh rates, and disabled
+panels there. Do not edit the managed `monitors.conf` target.
+
+NVIDIA variables are enabled only when an NVIDIA DRM device is detected. VMs
+use Qt Quick software rendering unless explicit GPU passthrough is available.
+These variables live in UWSM so the full graphical session receives them.
+
+## Daily Use
 
 ```bash
 chezmoi status
@@ -32,84 +77,10 @@ chezmoi add ~/.bashrc
 chezmoi apply
 ```
 
-## Packages
+Run `./install/post-apply-check.sh` after package or config changes. From a live
+Hyprland session, run `./install/check-hyprland-options.sh` after changing
+Hyprland options.
 
-The recommended first install is intentionally small. Use the bootstrap to install only the mandatory desktop layer first:
-
-```bash
-./install/bootstrap.sh
-```
-
-Manual package install after `paru` is available:
-
-```bash
-sudo pacman -S --needed - < packages/pacman.txt
-paru -S --needed - < packages/aur.txt
-```
-
-After Hyprland boots cleanly, install optional layers as needed:
-
-```bash
-sudo pacman -S --needed - < packages/dev-pacman.txt
-paru -S --needed - < packages/dev-aur.txt
-
-sudo pacman -S --needed - < packages/gaming-pacman.txt
-paru -S --needed - < packages/gaming-aur.txt
-
-sudo pacman -S --needed - < packages/apps-pacman.txt
-paru -S --needed - < packages/apps-aur.txt
-```
-
-## Scope
-
-This repo keeps the user-level desktop and development configuration for a clean CachyOS Hyprland setup. It intentionally does not depend on Omarchy at runtime.
-
-Managed desktop components:
-
-- Hyprland via UWSM
-- Waybar
-- Walker
-- Mako
-- Hypridle and Hyprlock
-- Ghostty as primary terminal
-
-Managed shell stack:
-
-- Bash
-- Starship
-- bash-completion
-- fzf
-- zoxide
-- mise
-
-## Bring-Up Order
-
-1. Install CachyOS minimal with no desktop.
-2. Clone or copy this repo to `~/dotfiles-cachyos`.
-3. Run `./install/bootstrap.sh` from the repo.
-4. Start Hyprland with `uwsm start hyprland.desktop`.
-5. Only after the desktop is stable, install optional `dev`, `gaming`, and `apps` manifests.
-
-## AI Context
-
-Read these files before changing system, development, terminal, gaming, or desktop setup:
-
-```bash
-docs/first-install.md
-docs/system.md
-docs/ai-context.md
-packages/pacman.txt
-packages/aur.txt
-packages/dev-pacman.txt
-packages/dev-aur.txt
-packages/gaming-pacman.txt
-packages/gaming-aur.txt
-packages/apps-pacman.txt
-packages/apps-aur.txt
-system/examples/etc/systemd/zram-generator.conf
-system/examples/etc/sysctl.d/99-memory.conf
-system/examples/fstab.example
-system/examples/cmdline.example
-```
-
-System-level files under `system/examples/` are documentation/examples only. Do not apply them with user-level chezmoi.
+See `docs/first-install.md` for bring-up checks and `docs/system.md` for the
+non-automated disk, encryption, and memory design. Files under
+`system/examples/` are reference fragments and are never applied by chezmoi.

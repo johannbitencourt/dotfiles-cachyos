@@ -5,70 +5,61 @@ Target: CachyOS minimal with no desktop environment.
 ## Installer Choices
 
 - Choose minimal/no desktop.
-- Use LUKS2 encrypted root if reinstalling the main machine.
-- Prefer Btrfs root with subvolumes documented in `docs/system.md`.
+- Prefer LUKS2 and Btrfs when reinstalling; see `docs/system.md`.
 - Do not install KDE, GNOME, or Omarchy.
+- Ensure the intended locale and user account are configured by the installer.
 
-## First Boot TTY
+## Bring Up The Desktop
 
-Install the minimum tools needed to fetch this repo:
+Follow the single fresh-install procedure in `README.md`. Bootstrap installs and
+validates the desktop but deliberately does not start a compositor from inside
+an existing session.
 
-```bash
-sudo pacman -S --needed git
-```
-
-Clone or copy the repo to:
-
-```text
-~/dotfiles-cachyos
-```
-
-Run the mandatory bootstrap:
-
-```bash
-cd ~/dotfiles-cachyos
-./install/bootstrap.sh
-```
-
-Start the desktop:
+Start from the TTY with:
 
 ```bash
 uwsm start hyprland.desktop
 ```
 
-## First Desktop Checks
+## Verify
 
 - `Super + Return` opens Ghostty.
-- `Super + Space` opens Walker.
-- Waybar is visible.
-- Network and Bluetooth applets start.
-- Audio keys change volume.
-- `Print` creates a screenshot.
+- `Super + Space` opens the DMS launcher.
+- The DMS bar, notifications, control center, and polkit prompt work.
+- Network, Bluetooth, audio, and brightness controls work in DMS.
+- `Print` opens screenshot capture.
 - `Super + Ctrl + L` locks the session.
-- `Super + Shift + Space` toggles Waybar.
+- `Super + Ctrl + V` opens clipboard history.
+- `Super + Shift + Space` toggles the DMS bar.
+- `Super + Ctrl + N` toggles night mode.
+- Battery notification runs only on machines with a battery.
 
-## After The Desktop Is Stable
-
-Install optional layers as needed:
+Check Hyprland after the first launch:
 
 ```bash
-sudo pacman -S --needed - < packages/dev-pacman.txt
-paru -S --needed - < packages/dev-aur.txt
-
-sudo pacman -S --needed - < packages/gaming-pacman.txt
-paru -S --needed - < packages/gaming-aur.txt
-
-sudo pacman -S --needed - < packages/apps-pacman.txt
-paru -S --needed - < packages/apps-aur.txt
+hyprctl configerrors
+./install/check-hyprland-options.sh
 ```
 
-## Monitor Note
+Both commands should complete without configuration errors.
 
-`~/.config/hypr/monitors.conf` currently targets Johann's desk setup:
+## Per-Host Monitors
+
+The generic monitor rule keeps every detected output usable. Add overrides to
+`~/.config/hypr/monitors.local.conf`, which chezmoi creates once and leaves
+unmanaged after creation:
 
 ```text
-DP-1 2560x1440@144
-eDP-1 disabled
+monitor = DP-1, 2560x1440@144, 0x0, 1
+monitor = eDP-1, disable
 ```
 
-If the first Hyprland launch is on different hardware, edit `~/.config/hypr/monitors.conf` from TTY before starting Hyprland.
+Use output names from `hyprctl monitors all`. Keep the wildcard rule in the
+managed `~/.config/hypr/monitors.conf` as a fallback when docking or moving the
+same dotfiles to another machine.
+
+## Optional Layers
+
+After the core desktop is stable, use `./install/packages.sh <layer>` for
+`apps`, `dev`, `gaming`, or `system`. The gaming layer requires the multilib
+repository because it contains `lib32-*` packages.

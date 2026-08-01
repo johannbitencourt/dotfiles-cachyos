@@ -1,0 +1,6 @@
+btrfs-progs
+cryptsetup
+nvme-cli
+pacman-contrib
+smartmontools
+zram-generator

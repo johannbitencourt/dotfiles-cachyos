@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+battery_threshold=10
+poll_interval=30
+
+shopt -s nullglob
+battery_dirs=(/sys/class/power_supply/BAT*)
+
+# Desktop or no battery present: nothing to monitor.
+if (( ${#battery_dirs[@]} == 0 )); then
+  exit 0
+fi
+
+notified=0
+
+while true; do
+  total=0
+  count=0
+  discharging=0
+
+  for bat in "${battery_dirs[@]}"; do
+    [[ -r "$bat/capacity" && -r "$bat/status" ]] || continue
+    capacity="$(<"$bat/capacity")"
+    status="$(<"$bat/status")"
+    total=$((total + capacity))
+    count=$((count + 1))
+    [[ $status == "Discharging" ]] && discharging=1
+  done
+
+  if (( count > 0 )); then
+    avg=$((total / count))
+    if (( discharging )) && (( avg <= battery_threshold )); then
+      if (( notified == 0 )); then
+        notify-send -u critical "Battery low" "Battery is down to ${avg}%" -i battery-caution -t 30000
+        notified=1
+      fi
+    else
+      notified=0
+    fi
+  fi
+
+  sleep "$poll_interval"
+done

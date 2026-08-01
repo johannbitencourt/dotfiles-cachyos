@@ -7,8 +7,17 @@ set mark-symlinked-directories on
 set colored-stats on
 set visible-stats on
 set menu-complete-display-prefix on
+set expand-tilde on
+set page-completions off
+set completion-query-items 200
+set skip-completed-text on
 
 "\e[A": history-search-backward
 "\e[B": history-search-forward
 "\C-p": history-search-backward
 "\C-n": history-search-forward
+"\C-a": beginning-of-line
+"\C-e": end-of-line
+"\e[1;5C": forward-word
+"\e[1;5D": backward-word
+"\e[3;5~": kill-word

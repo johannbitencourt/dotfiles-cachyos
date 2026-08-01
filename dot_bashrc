@@ -6,7 +6,21 @@ EDITOR=nvim
 VISUAL=nvim
 
 export TERMINAL EDITOR VISUAL
-export LANG=en_US.UTF-8
+export LANG="${LANG:-C.UTF-8}"
+export LC_COLLATE=C
+export PAGER=less
+export LESS='--quit-if-one-screen --RAW-CONTROL-CHARS --ignore-case --LONG-PROMPT'
+export MANPAGER='less --quit-if-one-screen --RAW-CONTROL-CHARS --ignore-case'
+
+HISTSIZE=50000
+HISTFILESIZE=100000
+HISTCONTROL=ignoreboth:erasedups
+HISTTIMEFORMAT='%F %T  '
+HISTIGNORE='ls:ll:la:l:cd:cd -:pwd:exit:clear:history:bg:fg:jobs'
+
+export HISTSIZE HISTFILESIZE HISTCONTROL HISTTIMEFORMAT HISTIGNORE
+shopt -s histappend
+PROMPT_COMMAND='history -a; history -n'
 
 path_prepend() {
   [[ -d "$1" ]] || return
@@ -30,7 +44,16 @@ path_prepend "$HOME/.local/share/pnpm"
 path_append "/usr/local/go/bin"
 export PATH
 
-shopt -s autocd
+shopt -s autocd cdspell checkwinsize dirspell globstar
+
+bind 'set enable-bracketed-paste on'
+bind 'set colored-completion-prefix on'
+bind 'set colored-stats on'
+
+export FZF_DEFAULT_COMMAND='fd --hidden --follow --exclude .git'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --info=inline --cycle'
 
 if [[ -r /usr/share/bash-completion/bash_completion ]]; then
   . /usr/share/bash-completion/bash_completion
@@ -46,16 +69,70 @@ fi
 
 # Git
 alias gst='git status'
+alias gss='git status --short'
 alias gco='git checkout'
 alias gb='git branch'
 alias gaa='git add .'
 alias gcmsg='git commit -m'
 alias gpush='git push'
+alias gpull='git pull --ff-only'
 alias glog='git log --oneline --decorate --color --graph'
 
 # Tools
 alias v='nvim'
+alias c='clear'
+alias h='history'
+alias path='printf "%s\n" ${PATH//:/ }'
+alias mkdir='mkdir -pv'
+alias cp='cp -iv'
+alias mv='mv -iv'
+alias rm='rm -Iv'
+alias df='df -h'
+alias du='du -h'
+alias grep='grep --color=auto'
+alias ls='ls --color=auto --group-directories-first'
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
 command -v bat >/dev/null 2>&1 && alias cat='bat --style=plain --paging=never'
+
+mkcd() {
+  mkdir -p "$1" && cd "$1"
+}
+
+take() {
+  mkcd "$@"
+}
+
+up() {
+  local levels="${1:-1}"
+  local path=""
+
+  while (( levels > 0 )); do
+    path="../$path"
+    levels=$((levels - 1))
+  done
+
+  cd "$path"
+}
+
+serve() {
+  local port="${1:-8000}"
+
+  if command -v python >/dev/null 2>&1; then
+    python -m http.server "$port"
+  elif command -v python3 >/dev/null 2>&1; then
+    python3 -m http.server "$port"
+  else
+    printf 'serve: python is not installed\n' >&2
+    return 1
+  fi
+}
+
+path_add() {
+  path_prepend "$1"
+  export PATH
+}
 
 if command -v starship >/dev/null 2>&1; then
   eval "$(starship init bash)"
